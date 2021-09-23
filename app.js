@@ -1,6 +1,6 @@
 /** BizTime express application. */
 // starter code Copyright Colt Steele and/or Rithm School and/or Springboard
-// all other code by Tor Kingdon
+// all other code (noted) by Tor Kingdon
 
 const express = require("express");
 
@@ -8,6 +8,12 @@ const app = express();
 const ExpressError = require("./expressError")
 
 app.use(express.json());
+
+// router code added by Tor Kingdon
+const cRoutes = require("./routes/companies");
+const iRoutes = require("./routes/invoices");
+app.use("/companies", cRoutes);
+app.use("/invoices", iRoutes);
 
 
 /** 404 handler */

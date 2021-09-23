@@ -7,8 +7,8 @@ CREATE DATABASE biztime;
 \c biztime;
 
 -- Linux compatibility code added by Tor Kingdon
-GRANT ALL PRIVILEGES ON DATABASE biztime TO kingtor;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO kingtor;
+GRANT ALL PRIVILEGES ON DATABASE biztime TO postgres;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
 
 DROP TABLE IF EXISTS invoices;
 DROP TABLE IF EXISTS companies;
