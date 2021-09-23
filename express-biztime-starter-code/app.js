@@ -1,6 +1,5 @@
 /** BizTime express application. */
-// starter code Copyright Colt Steele and/or Rithm School and/or Springboard
-// all other code by Tor Kingdon
+
 
 const express = require("express");
 
