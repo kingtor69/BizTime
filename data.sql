@@ -31,10 +31,12 @@ CREATE TABLE invoices (
 
 INSERT INTO companies
   VALUES ('apple', 'Apple Computer', 'Maker of OSX.'),
-         ('ibm', 'IBM', 'Big blue.');
+         ('ibm', 'IBM', 'Big blue.'),
+         ('hks', 'Hear Kitty Studios', 'Audio post soup-to-nuts.');
 
 INSERT INTO invoices (comp_Code, amt, paid, paid_date)
   VALUES ('apple', 100, false, null),
          ('apple', 200, false, null),
-         ('apple', 300, true, '2018-01-01'),
-         ('ibm', 400, false, null);
+         ('apple', 300, true, '2018-01-31'),
+         ('ibm', 400, false, null),
+         ('hks', 2, true, '2018-01-01');
