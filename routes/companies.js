@@ -39,7 +39,7 @@ router.post('/', async (req, resp, next) => {
             `INSERT INTO companies
             (code, name, description)
             VALUES ($1, $2, $3)
-            RETURNING (code, name, description)`,
+            RETURNING code, name, description`,
             [ code, name, description ]
         );
         return resp.status(201).json({company: results.rows[0]});

@@ -34,13 +34,13 @@ router.get('/:id', async (req, resp, next) => {
 router.post('/', async (req, resp, next) => {
     // add a new invoice
     try {
-        const { id, comp_code, amt, paid, paid_date } = req.body;
+        const { comp_code, amt, paid, paid_date } = req.body;
         const results = await db.query(
             `INSERT INTO invoices
-            (id, comp_code, amt, paid, paid_date)
-            VALUES ($1, $2, $3)
-            RETURNING (id, comp_code, amt, paid, paid_date)`,
-            [ id, comp_code, amt, paid, paid_date ]
+            (comp_code, amt, paid, paid_date)
+            VALUES ($1, $2, $3, $4)
+            RETURNING comp_code, amt, paid, paid_date`,
+            [ comp_code, amt, paid, paid_date ]
         );
         return resp.status(201).json({invoice: results.rows[0]});
     } catch (e) {

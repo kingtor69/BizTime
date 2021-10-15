@@ -34,7 +34,7 @@ INSERT INTO companies
          ('ibm', 'IBM', 'Big blue.'),
          ('hks', 'Hear Kitty Studios', 'Audio post soup-to-nuts.');
 
-INSERT INTO invoices (comp_Code, amt, paid, paid_date)
+INSERT INTO invoices (comp_code, amt, paid, paid_date)
   VALUES ('apple', 100, false, null),
          ('apple', 200, false, null),
          ('apple', 300, true, '2018-01-31'),
