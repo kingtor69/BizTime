@@ -3,12 +3,17 @@ process.env.NODE_ENV = "test";
 const request = require("supertest");
 const db = require('../db');
 const app = require("../app");
+const slugify = require('slugify');
 
 let otelloCorp = {
-    code: "otc",
     name: "Otello, Inc.",
     description: "Harrassing cats since 2015."
 };
+otelloCorp.code = slugify(otelloCorp.name, {
+    replacement: '', 
+    lower: true, 
+    remove: /[!@#$%^&*()]/g
+});
 
 beforeEach(async() => {
     const { code, name, description } = otelloCorp;
@@ -28,7 +33,8 @@ describe("GET /companies", () => {
     test("Returns a list of companies", async () => {
         const resp = await request(app).get(`/companies`);
         expect(resp.statusCode).toBe(200);
-        expect(resp.body).toEqual({companies: [otelloCorp]});
+        expect(resp.body.companies[0].name).toEqual(otelloCorp.name);
+        expect(resp.body.companies[0].description).toEqual(otelloCorp.description);
     });
 });
 
@@ -51,7 +57,8 @@ describe("POST /companies", () => {
             .post(`/companies`)
             .send(colonelDoof);
         expect(resp.statusCode).toBe(201);
-        expect(resp.body).toEqual({company: colonelDoof});
+        expect(resp.body.company.name).toEqual(colonelDoof.name);
+        expect(resp.body.company.description).toEqual(colonelDoof.description);
     });
 });
 
