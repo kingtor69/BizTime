@@ -81,19 +81,40 @@ describe("POST /invoices", () => {
 });
 
 describe("PUT /invoices/:id", () => {
-    test("Edit an existing invoice's data", async() => {
-        const invTestRev = {
-            amt: 300000
+    test("Mark an invoice as paid or unpaid", async() => {
+        let invUnpaidTest = {
+            comp_code: "otc",
+            amt: 999,
+            paid: false,
+            paid_date: null
         };
         const idResp = await db.query(`SELECT id FROM invoices`);
         idTest = idResp.rows[0].id;
-        const resp = await request(app)
-            .put(`/invoices/${idTest}`)
-            .send(invTestRev);
-        expect(resp.statusCode).toBe(200);
-        expect(resp.body.invoice.amt).toEqual(invTestRev.amt);
-        expect(resp.body.invoice.paid).toEqual(invTest.paid);
-        expect(resp.body.invoice.paid_date).toEqual(invTest.paid_date);
+
+        for (let invoice of [invTest, invUnpaidTest]) {
+            const invTestRevSuccess = {
+                amt: invoice.amt,
+                paid: !invoice.paid
+            };
+            const invTestRevNoChange = {
+                paid: invoice.paid
+            };
+            const invTestRevFail = {
+                amt: (invoice.amt + 1),
+                paid: !invoice.paid
+            };
+            const respSuccess = await request(app)
+                .put(`/invoices/${idTest}`)
+                .send(invTestRevSuccess);
+            expect(respSuccess.statusCode).toBe(200);
+            expect(respSuccess.body.invoice.amt).toEqual(invTestRevSuccess.amt);
+            expect(respSuccess.body.invoice.paid).toEqual(!invoice.paid);
+            if (respSuccess.body.invoice.paid) {
+                expect(respSuccess.body.invoice.paid_date).toBeTruthy();
+            } else {
+                expect(respSuccess.body.invoice.paid_date).toBe(null);
+            };
+        };
     });
 });
 

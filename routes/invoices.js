@@ -52,40 +52,46 @@ router.put('/:id', async (req, resp, next) => {
     // edit information on a specific invoice
     try {
         const { id } = req.params;
-        let { comp_code, amt, paid, paid_date } = req.body;
-        if (!comp_code) {
-            comp_code_results = await db.query(
-                `SELECT comp_code 
-                FROM invoices
-                WHERE id=$1`, [ id ]
-            );
-            comp_code = comp_code_results.rows[0].comp_code;
+        let { amt, paid } = req.body;
+        invoiceLookup = await db.query(
+            `SELECT comp_code, amt, paid, paid_date, add_date 
+            FROM invoices
+            WHERE id=$1`, [ id ]
+        );
+        if (invoiceLookup.rows.length === 0) {
+            throw new ExpressError(`Unable to locate invoice with id ${id}.`, 404);
+        };
+        
+        let comp_code = invoiceLookup.rows[0].comp_code;
+        let paid_date = invoiceLookup.rows[0].paid_date;
+        let invoiceAmt = invoiceLookup.rows[0].amt;
+        let add_date = invoiceLookup.rows[0].add_date;
+        if (invoiceLookup.rows[0].paid === paid) {
+            amt = invoiceAmt;
+            return resp.json({invoices: {
+                id,
+                comp_code,
+                amt,
+                paid,
+                add_date,
+                paid_date
+            }});
         };
         if (!amt) {
-            amt_results = await db.query(
-                `SELECT amt 
-                FROM invoices
-                WHERE id=$1`, [ id ]
-            );
-            amt = amt_results.rows[0].amt;
+            throw new ExpressError("You must send an amount to mark and invoice paid or unpaid an invoice.", 400);
         };
-        if (!paid) {
-            paid_results = await db.query(
-                `SELECT paid 
-                FROM invoices
-                WHERE id=$1`, [ id ]
-            );
-            paid = paid_results.rows[0].paid;
+        if (paid) {
+            if (invoiceAmt !== amt) {
+                throw new ExpressError(`Sorry, partial payments are not supported. Amount paid must be ${invoiceAmt} to process.`, 400);
+            };
+            paid_date = new Date();
+        } else {
+            if (invoiceAmt !== (amt)) {
+                throw new ExpressError(`Sorry, partial un-payments are not supported. Submitted amount must be ${invoiceAmt}.`, 400);
+            };
+            paid_date = null;
         };
-        if (!paid_date) {
-            paid_date_results = await db.query(
-                `SELECT paid_date 
-                FROM invoices
-                WHERE id=$1`, [ id ]
-            );
-            paid_date = paid_date_results.rows[0].paid_date;
-        };
-
+        
         const results = await db.query(
             `UPDATE invoices
             SET comp_code=$1,
@@ -96,9 +102,7 @@ router.put('/:id', async (req, resp, next) => {
             RETURNING id, comp_code, amt, paid, paid_date, add_date`,
             [ comp_code, amt, paid, paid_date, id ]
         );
-        if (results.rows.length === 0) {
-            throw new ExpressError(`Unable to locate invoice with id ${id}.`, 404);
-        };
+        
         return resp.json({invoice: results.rows[0]});
     } catch (e) {
         return next(e);
