@@ -172,7 +172,23 @@ router.delete('/:code', async (req, resp, next) => {
     } catch (e) {
         return next(e);
     };
- 
-})
+});
+
+router.post('/industries/', async (req, resp, next) => {
+    // associate a company with an industry
+    try {
+        const { comp_code, industry_code } = req.body;
+        results = await db.query(
+            `INSERT INTO companies_industries
+            (comp_code, industry_code)
+            VALUES ($1, $2)
+            RETURNING comp_code, industry_code`,
+            [ comp_code, industry_code ]
+        );
+        return resp.status(201).json({companies_industries: results.rows[0]});
+    } catch(e) {
+        return next(e);
+    };
+});
 
 module.exports = router;
