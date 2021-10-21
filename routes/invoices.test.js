@@ -84,7 +84,7 @@ describe("PUT /invoices/:id", () => {
     test("Mark an invoice as paid or unpaid", async() => {
         let invUnpaidTest = {
             comp_code: "otc",
-            amt: 999,
+            amt: 99,
             paid: false,
             paid_date: null
         };
