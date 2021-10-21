@@ -10,6 +10,8 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
 
 DROP TABLE IF EXISTS invoices;
 DROP TABLE IF EXISTS companies;
+DROP TABLE IF EXISTS industries;
+DROP TABLE IF EXISTS companies_industries;
 
 CREATE TABLE companies (
     code text PRIMARY KEY,
@@ -28,13 +30,13 @@ CREATE TABLE invoices (
 );
 
 CREATE TABLE industries (
-    ind_code text PRIMARY KEY,
-    ind_name text NOT NULL UNIQUE,
-    ind_description text
+    industry_code text PRIMARY KEY,
+    industry_name text NOT NULL UNIQUE,
+    industry_description text
 );
 
 CREATE TABLE companies_industries (
     id serial PRIMARY KEY,
     comp_code text NOT NULL REFERENCES companies ON DELETE CASCADE,
-    ind_code text NOT NULL REFERENCES industries ON DELETE CASCADE
+    industry_code text NOT NULL REFERENCES industries ON DELETE CASCADE
 );

@@ -5,77 +5,35 @@ const ExpressError = require("../expressError");
 const slugify = require('slugify');
 
 router.get('/', async (req, resp, next) => {
-    // Get a list of companies.
+    // Get a list of industries.
     try {
         const results = await db.query(
-            `SELECT code, name, description, i.industry_name
-            FROM companies AS c
-            JOIN companies_industries AS ci
-            ON ci.comp_code = c.code
-            JOIN industries AS i
-            ON i.industry_code = ci.industry_code
-            ORDER BY c.name
-            `
+            'SELECT * FROM industries'
         );
-        const company0 = {};
-        let i = 0;
-        company0.code = results.rows[i].code;
-        company0.name = results.rows[i].name;
-        company0.description = results.rows[i].description;
-        company0.industry_names = [results.rows[i].industry_name];
-        const companies = [company0];
-        for (let j=1; j < results.rows.length; j++) {
-            if ((i in companies) && (results.rows[j].name === companies[i].name)) {
-                companies[i].industry_names.push(results.rows[j].industry_name);
-            } else {
-                i++;
-                const companyJ = {};
-                companyJ.code = results.rows[j].code;
-                companyJ.name = results.rows[j].name;
-                companyJ.description = results.rows[j].description;
-                companyJ.industry_names = [results.rows[j].industry_name];
-                companies.push(companyJ);
-            };
-        };
-        return resp.json({companies: companies});
+        return resp.json({industries: results.rows});
     } catch (e) {
         return next(e);
     };
 });
 
 router.get('/:code', async (req, resp, next) => {
-    // get information on a specific company
+    // get information on a specific industry
     try {
         const { code } = req.params;
         const results = await db.query(
-            `SELECT code, name, description, i.industry_name
-            FROM companies AS c
-            JOIN companies_industries AS ci
-            ON ci.comp_code = c.code
-            JOIN industries AS i
-            ON i.industry_code = ci.industry_code
-            WHERE code = $1
-            `, [ code ]
+            `SELECT * FROM industries WHERE code=$1`, [code]
         );
         if (results.rows.length === 0) {
-            throw new ExpressError(`Unable to locate company with code ${code}.`, 404);
+            throw new ExpressError(`Unable to locate industry with code ${code}.`, 404);
         };
-        const company = {};
-        company.code = results.rows[0].code;
-        company.name = results.rows[0].name;
-        company.description = results.rows[0].description;
-        company.industry_names = [results.rows[0].industry_name];
-        for (let i=1; i < results.rows.length; i++) {
-            company.industry_names.push(results.rows[i].industry_name);
-        };
-        return resp.json({company: company});
+        return resp.json({industry: results.rows[0]});
     } catch (e) {
         return next(e);
     };
 });
 
 router.post('/', async (req, resp, next) => {
-    // add a new company
+    // add a new industry
     try {
         const { name, description } = req.body;
         const codeRaw = slugify(name, {
@@ -91,7 +49,7 @@ router.post('/', async (req, resp, next) => {
         while(!unique) {
             try {
                 results = await db.query(
-                    `INSERT INTO companies
+                    `INSERT INTO industries
                     (code, name, description)
                     VALUES ($1, $2, $3)
                     RETURNING code, name, description`,
@@ -109,21 +67,21 @@ router.post('/', async (req, resp, next) => {
             };
         };
         
-        return resp.status(201).json({company: results.rows[0]});
+        return resp.status(201).json({industry: results.rows[0]});
     } catch (e) {
         return next(e);
     };
 });
 
 router.put('/:code', async (req, resp, next) => {
-    // edit information on a specific company
+    // edit information on a specific industry
     try {
         const { code } = req.params;
         let { name, description } = req.body;
         if (!name) {
             name_results = await db.query(
                 `SELECT name 
-                FROM companies
+                FROM industries
                 WHERE code=$1`, [ code ]
             );
             name = name_results.rows[0].name;
@@ -131,13 +89,13 @@ router.put('/:code', async (req, resp, next) => {
         if (!description) {
             description_results = await db.query(
                 `SELECT description 
-                FROM companies
+                FROM industries
                 WHERE code=$1`, [ code ]
             );
             description = description_results.rows[0].description;
         };
         const results = await db.query(
-            `UPDATE companies
+            `UPDATE industries
             SET name=$1,
             description=$2
             WHERE code=$3
@@ -145,9 +103,9 @@ router.put('/:code', async (req, resp, next) => {
             [ name, description, code ]
         );
         if (results.rows.length === 0) {
-            throw new ExpressError(`Unable to locate company with code ${code}.`, 404);
+            throw new ExpressError(`Unable to locate industry with code ${code}.`, 404);
         };
-        return resp.json({company: results.rows[0]});
+        return resp.json({industry: results.rows[0]});
     } catch (e) {
         return next(e);
     };
@@ -158,15 +116,15 @@ router.delete('/:code', async (req, resp, next) => {
         const { code } = req.params;
         const code_results = await db.query(
             `SELECT code
-            FROM companies
+            FROM industries
             WHERE code=$1`,
             [ code ]
         );
         if (code_results.rows.length === 0) {
-            throw new ExpressError(`Unable to locate company with code ${code}.`, 404);
+            throw new ExpressError(`Unable to locate industry with code ${code}.`, 404);
         };
         const results = await db.query(
-            `DELETE FROM companies WHERE code=$1`, [code]
+            `DELETE FROM industries WHERE code=$1`, [code]
         );
         return resp.json({status: "deleted"});
     } catch (e) {

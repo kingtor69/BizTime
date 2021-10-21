@@ -12,8 +12,10 @@ app.use(express.json());
 // router code added by Tor Kingdon
 const cRoutes = require("./routes/companies");
 const iRoutes = require("./routes/invoices");
+const indRoutes = require("./routes/industries");
 app.use("/companies", cRoutes);
 app.use("/invoices", iRoutes);
+app.use("/industries", indRoutes);
 
 
 /** 404 handler */
