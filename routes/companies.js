@@ -48,7 +48,7 @@ router.get('/:code', async (req, resp, next) => {
     // get information on a specific company
     try {
         const { code } = req.params;
-        const results = await db.query(
+        let results = await db.query(
             `SELECT code, name, description, i.industry_name
             FROM companies AS c
             JOIN companies_industries AS ci
@@ -58,17 +58,30 @@ router.get('/:code', async (req, resp, next) => {
             WHERE code = $1
             `, [ code ]
         );
-        if (results.rows.length === 0) {
-            throw new ExpressError(`Unable to locate company with code ${code}.`, 404);
-        };
         const company = {};
+        if (results.rows.length === 0) {
+            try {
+                results = await db.query(
+                    `SELECT code, name, description
+                    FROM companies
+                    WHERE code = $1`,
+                    [ code ]
+                );
+                if (results.rows.length === 0) {
+                    throw new ExpressError(`Unable to locate company with code ${code}.`, 404);
+                };
+            } catch (e) {
+                return next(e);
+            };
+        } else {
+            company.industry_names = [results.rows[0].industry_name];
+            for (let i=1; i < results.rows.length; i++) {
+                company.industry_names.push(results.rows[i].industry_name);
+            };
+        };
         company.code = results.rows[0].code;
         company.name = results.rows[0].name;
         company.description = results.rows[0].description;
-        company.industry_names = [results.rows[0].industry_name];
-        for (let i=1; i < results.rows.length; i++) {
-            company.industry_names.push(results.rows[i].industry_name);
-        };
         return resp.json({company: company});
     } catch (e) {
         return next(e);
