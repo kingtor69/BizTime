@@ -7,8 +7,14 @@ const slugify = require('slugify');
 router.get('/', async (req, resp, next) => {
     // Get a list of companies.
     try {
-        const results = await db.query(
-            `SELECT code, name, description, i.industry_name
+        // first get a list of all companies
+        const compResults = await db.query(
+            `SELECT code, name, description
+            FROM companies`
+        );
+        // then get any industry information where it exists
+        const compsIndustriesResults = await db.query(
+            `SELECT code, i.industry_name
             FROM companies AS c
             JOIN companies_industries AS ci
             ON ci.comp_code = c.code
@@ -17,25 +23,20 @@ router.get('/', async (req, resp, next) => {
             ORDER BY c.name
             `
         );
-        const company0 = {};
-        let i = 0;
-        company0.code = results.rows[i].code;
-        company0.name = results.rows[i].name;
-        company0.description = results.rows[i].description;
-        company0.industry_names = [results.rows[i].industry_name];
-        const companies = [company0];
-        for (let j=1; j < results.rows.length; j++) {
-            if ((i in companies) && (results.rows[j].name === companies[i].name)) {
-                companies[i].industry_names.push(results.rows[j].industry_name);
-            } else {
-                i++;
-                const companyJ = {};
-                companyJ.code = results.rows[j].code;
-                companyJ.name = results.rows[j].name;
-                companyJ.description = results.rows[j].description;
-                companyJ.industry_names = [results.rows[j].industry_name];
-                companies.push(companyJ);
+        // and associate it with the same company in the whole company list
+        const companies = [];
+        for (let i=0; i<compResults.rows.length; i++) {
+            const companyI = {};
+            companyI.code = compResults.rows[i].code;
+            companyI.name = compResults.rows[i].name;
+            companyI.description = compResults.rows[i].description;
+            companyI.industry_names = [];
+            for (let j=0; j < compsIndustriesResults.rows.length; j++) {
+                if (('code' in compsIndustriesResults.rows[j]) && (compsIndustriesResults.rows[j].code === companyI.code)) {
+                    companyI.industry_names.push(compsIndustriesResults.rows[j].industry_name);
+                };
             };
+            companies.push(companyI);
         };
         return resp.json({companies: companies});
     } catch (e) {
