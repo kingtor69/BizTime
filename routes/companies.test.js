@@ -7,7 +7,8 @@ const slugify = require('slugify');
 
 let otelloCorp = {
     name: "Otello, Inc.",
-    description: "Harrassing cats since 2015."
+    description: "Harrassing cats since 2015.",
+
 };
 otelloCorp.code = slugify(otelloCorp.name, {
     replacement: '', 

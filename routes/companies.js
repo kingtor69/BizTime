@@ -108,7 +108,6 @@ router.post('/', async (req, resp, next) => {
                 };
             };
         };
-        
         return resp.status(201).json({company: results.rows[0]});
     } catch (e) {
         return next(e);
